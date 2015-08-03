@@ -36,16 +36,15 @@ public class ReplyGraphExercise {
 		// format: (msg ID, sender, reply-to msg ID)
 		DataSet<Tuple3<String, String, String>> mails = getEmailDataSet(env);
 
-		// TODO Construct reply connections by joining on messageId and reply-To
 		DataSet<Tuple2<String, String>> replyConnections = mails
-				.join(null)
-				.where(-1)
-				.equalTo(-1)
-				.projectFirst(-1)
-				.projectSecond(-1);
+				.join(mails)
+				.where(0)
+				.equalTo(2)
+				.projectFirst(1)
+				.projectSecond(1);
 
 		replyConnections
-				.groupBy(-1) // TODO Set groupBy fields
+				.groupBy(0, 1)
 				.reduceGroup(new ConnectionCounter())
 				.print();
 	}
@@ -58,7 +57,17 @@ public class ReplyGraphExercise {
 				Iterable<Tuple2<String, String>> values,
 				Collector<Tuple3<String, String, Integer>> out) {
 
-			// TODO Count number of connections
+			String from = null;
+			String to = null;
+			int count = 0;
+
+			for (Tuple2<String, String> val : values) {
+				from = val.f0;
+				to = val.f1;
+				count++;
+			}
+
+			out.collect(new Tuple3<String, String, Integer>(from, to, count));
 		}
 	}
 

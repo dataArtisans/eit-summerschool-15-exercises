@@ -45,7 +45,7 @@ public class MailGraphExercise {
 		mails
 				.map(new MailMonthEmailExtractor())
 				.filter(new ExcludeJiraAndGit())
-				.groupBy(-1) // TODO Set groupBy fields
+				.groupBy(0, 1)
 				.reduceGroup(new MailCounter())
 				.print();
 	}
@@ -56,8 +56,7 @@ public class MailGraphExercise {
 		@Override
 		public Tuple2<String, String> map(Tuple2<String, String> value) throws Exception {
 			// Input: (2015-03-02-21:52:27, NAME <email@adress.org>)
-			// TODO Extract month and email
-			return null;
+			return new Tuple2<String, String>(getMonth(value.f0), getEmailAddress(value.f1));
 		}
 
 		/**
@@ -79,8 +78,8 @@ public class MailGraphExercise {
 
 		@Override
 		public boolean filter(Tuple2<String, String> value) throws Exception {
-			// TODO Exclude all mails from "jira@apache.org" and "git@git.apache.org"
-			return true;
+			return !(value.f1.equals("jira@apache.org")
+					|| value.f1.equals("git@git.apache.org"));
 		}
 	}
 
@@ -92,8 +91,18 @@ public class MailGraphExercise {
 				Iterable<Tuple2<String, String>> values,
 				Collector<Tuple3<String, String, Integer>> out) throws Exception {
 
-			// TODO Count number of emails
-			out.collect(new Tuple3<String, String, Integer>());
+			String timestamp = null;
+			String sender = null;
+
+			int count = 0;
+
+			for (Tuple2<String, String> val : values) {
+				timestamp = val.f0;
+				sender = val.f1;
+				count++;
+			}
+
+			out.collect(new Tuple3<String, String, Integer>(timestamp, sender, count));
 		}
 	}
 

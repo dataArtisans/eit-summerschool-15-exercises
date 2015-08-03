@@ -28,13 +28,16 @@ import org.apache.flink.util.Collector;
 
 public class ReplyGraphExercise {
 
+	// TODO adjust path
+	private static String pathToArchive = "/path/to/dev-flink.apache.org.archive";
+
 	public static void main(String[] args) throws Exception {
 
 		// get an ExecutionEnvironment
 		ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 
 		// format: (msg ID, sender, reply-to msg ID)
-		DataSet<Tuple3<String, String, String>> mails = getEmailDataSet(env);
+		DataSet<Tuple3<String, String, String>> mails = getEmailDataSet(env, pathToArchive);
 
 		DataSet<Tuple2<String, String>> replyConnections = mails
 				.join(mails)
@@ -74,13 +77,13 @@ public class ReplyGraphExercise {
 	// -------------------------------------------------------------------------
 
 	private static DataSet<Tuple3<String, String, String>> getEmailDataSet(
-			ExecutionEnvironment env) {
+			ExecutionEnvironment env,
+			String pathToArchive) {
 
 		return env
 				// format: (msg ID, timestamp, sender, subject, reply-to msg ID)
-				.readCsvFile(
-						ClassLoader.getSystemClassLoader()
-								.getResource("dev@flink.apache.org.archive").getPath())
+				.readCsvFile(MailGraphExercise.class
+						.getResource(pathToArchive).getPath())
 				.fieldDelimiter("|")
 				.includeFields("10101") // we want (msg ID, sender, reply-to msg ID)
 				.types(String.class, String.class, String.class)

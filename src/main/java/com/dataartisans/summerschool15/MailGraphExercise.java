@@ -1,5 +1,3 @@
-package com.dataartisans.summerschool15;
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with this
@@ -16,6 +14,8 @@ package com.dataartisans.summerschool15;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+package com.dataartisans.summerschool15;
 
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
@@ -34,13 +34,16 @@ import org.apache.flink.util.Collector;
  */
 public class MailGraphExercise {
 
+	// TODO adjust path
+	private static String pathToArchive = "/path/to/dev-flink.apache.org.archive";
+
 	public static void main(String[] args) throws Exception {
 
 		// get an ExecutionEnvironment
 		ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 
 		// (timestamp, sender)
-		DataSet<Tuple2<String, String>> mails = getEmailDataSet(env);
+		DataSet<Tuple2<String, String>> mails = getEmailDataSet(env, pathToArchive);
 
 		mails
 				.map(new MailMonthEmailExtractor())
@@ -108,12 +111,13 @@ public class MailGraphExercise {
 
 	// -------------------------------------------------------------------------
 
-	private static DataSet<Tuple2<String, String>> getEmailDataSet(ExecutionEnvironment env) {
+	private static DataSet<Tuple2<String, String>> getEmailDataSet(
+			ExecutionEnvironment env,
+			String pathToArchive) {
+
 		return env
 				// format: (msg ID, timestamp, sender, subject, reply-to msg ID)
-				.readCsvFile(
-						ClassLoader.getSystemClassLoader()
-								.getResource("dev@flink.apache.org.archive").getPath())
+				.readCsvFile(pathToArchive)
 				.fieldDelimiter("|")
 				.includeFields("011000") // we want (timestamp, sender)
 				.types(String.class, String.class);

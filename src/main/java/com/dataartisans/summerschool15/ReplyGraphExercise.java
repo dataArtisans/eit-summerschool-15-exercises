@@ -18,15 +18,16 @@
 
 package com.dataartisans.summerschool15;
 
-import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
-import org.apache.flink.util.Collector;
 
 public class ReplyGraphExercise {
+
+	// TODO adjust path
+	private static String pathToArchive = "/path/to/dev-flink.apache.org.archive";
 
 	public static void main(String[] args) throws Exception {
 
@@ -36,30 +37,10 @@ public class ReplyGraphExercise {
 		// format: (msg ID, sender, reply-to msg ID)
 		DataSet<Tuple3<String, String, String>> mails = getEmailDataSet(env);
 
-		// TODO Construct reply connections by joining on messageId and reply-To
-		DataSet<Tuple2<String, String>> replyConnections = mails
-				.join(null)
-				.where(-1)
-				.equalTo(-1)
-				.projectFirst(-1)
-				.projectSecond(-1);
+		// TODO Construct reply connections
+		DataSet<Tuple2<String, String>> replyConnections;
 
-		replyConnections
-				.groupBy(-1) // TODO Set groupBy fields
-				.reduceGroup(new ConnectionCounter())
-				.print();
-	}
-
-	public static class ConnectionCounter implements GroupReduceFunction<
-			Tuple2<String, String>, Tuple3<String, String, Integer>> {
-
-		@Override
-		public void reduce(
-				Iterable<Tuple2<String, String>> values,
-				Collector<Tuple3<String, String, Integer>> out) {
-
-			// TODO Count number of connections
-		}
+		// TODO Count all connections and print
 	}
 
 	// -------------------------------------------------------------------------
@@ -69,9 +50,7 @@ public class ReplyGraphExercise {
 
 		return env
 				// format: (msg ID, timestamp, sender, subject, reply-to msg ID)
-				.readCsvFile(
-						ClassLoader.getSystemClassLoader()
-								.getResource("dev@flink.apache.org.archive").getPath())
+				.readCsvFile(pathToArchive)
 				.fieldDelimiter("|")
 				.includeFields("10101") // we want (msg ID, sender, reply-to msg ID)
 				.types(String.class, String.class, String.class)
@@ -79,7 +58,7 @@ public class ReplyGraphExercise {
 					@Override
 					public Tuple3<String, String, String> map(
 							Tuple3<String, String, String> value) throws Exception {
-
+						// Extract the email
 						value.f1 = value.f1.substring(
 								value.f1.lastIndexOf("<") + 1,
 								value.f1.length() - 1).trim();

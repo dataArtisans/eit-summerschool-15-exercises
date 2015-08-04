@@ -34,18 +34,21 @@ import org.apache.flink.util.Collector;
  */
 public class MailGraphExercise {
 
+	// TODO adjust path
+	private static String pathToArchive = "/path/to/dev-flink.apache.org.archive";
+
 	public static void main(String[] args) throws Exception {
 
 		// get an ExecutionEnvironment
 		ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 
-		// (timestamp, sender)
-		DataSet<Tuple2<String, String>> mails = getEmailDataSet(env);
+		// Input: (timestamp, sender) like (2015-03-02-21:52:27, NAME <email@adress.org>)
+		DataSet<Tuple2<String, String>> mails = getEmailDataSet(env, pathToArchive);
 
 		mails
 				.map(new MailMonthEmailExtractor())
 				.filter(new ExcludeJiraAndGit())
-				.groupBy(-1) // TODO Set groupBy fields
+				.groupBy(0) // TODO add grouping fields
 				.reduceGroup(new MailCounter())
 				.print();
 	}
@@ -56,8 +59,8 @@ public class MailGraphExercise {
 		@Override
 		public Tuple2<String, String> map(Tuple2<String, String> value) throws Exception {
 			// Input: (2015-03-02-21:52:27, NAME <email@adress.org>)
-			// TODO Extract month and email
-			return null;
+			// TODO extract month for grouping later and mail
+			return value;
 		}
 
 		/**
@@ -79,7 +82,7 @@ public class MailGraphExercise {
 
 		@Override
 		public boolean filter(Tuple2<String, String> value) throws Exception {
-			// TODO Exclude all mails from "jira@apache.org" and "git@git.apache.org"
+			// TODO exclude all emails from jira@apache.org or git@git.apache.org
 			return true;
 		}
 	}
@@ -92,19 +95,19 @@ public class MailGraphExercise {
 				Iterable<Tuple2<String, String>> values,
 				Collector<Tuple3<String, String, Integer>> out) throws Exception {
 
-			// TODO Count number of emails
-			out.collect(new Tuple3<String, String, Integer>());
+			// TODO implement counter
 		}
 	}
 
 	// -------------------------------------------------------------------------
 
-	private static DataSet<Tuple2<String, String>> getEmailDataSet(ExecutionEnvironment env) {
+	private static DataSet<Tuple2<String, String>> getEmailDataSet(
+			ExecutionEnvironment env,
+			String pathToArchive) {
+
 		return env
 				// format: (msg ID, timestamp, sender, subject, reply-to msg ID)
-				.readCsvFile(
-						ClassLoader.getSystemClassLoader()
-								.getResource("dev@flink.apache.org.archive").getPath())
+				.readCsvFile(pathToArchive)
 				.fieldDelimiter("|")
 				.includeFields("011000") // we want (timestamp, sender)
 				.types(String.class, String.class);

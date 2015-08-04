@@ -205,7 +205,7 @@ under the License.
 				<configuration>
 					<archive>
 						<manifestEntries>
-							<Main-Class>org.myorg.quickstart.MailGraphExercise</Main-Class>
+							<Main-Class>com.dataartisans.summerschool15.MailGraphExercise</Main-Class>
 						</manifestEntries>
 					</archive>
 				</configuration>

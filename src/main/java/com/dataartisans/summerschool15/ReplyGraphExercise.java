@@ -82,8 +82,7 @@ public class ReplyGraphExercise {
 
 		return env
 				// format: (msg ID, timestamp, sender, subject, reply-to msg ID)
-				.readCsvFile(MailGraphExercise.class
-						.getResource(pathToArchive).getPath())
+				.readCsvFile(pathToArchive)
 				.fieldDelimiter("|")
 				.includeFields("10101") // we want (msg ID, sender, reply-to msg ID)
 				.types(String.class, String.class, String.class)
